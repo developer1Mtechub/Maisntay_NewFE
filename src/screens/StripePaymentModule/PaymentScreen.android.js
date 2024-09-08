@@ -22,24 +22,21 @@ import HeaderComponent from '../../components/HeaderComponent';
 import useBackHandler from '../../components/useBackHandler';
 import { createNotification } from '../../redux/NotificationModuleSlices/createNotificationSlice';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
+import { useAlert } from '../../providers/AlertContext';
 const PaymentScreen = ({ navigation, route }) => {
     const { t } = useCustomTranslation();
     const { paymentPayload } = route.params;
     const { createPaymentMethod } = useStripe();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const createCustomerStatus = useSelector((state) => state.createCustomer.status)
     const makePaymentStatus = useSelector((state) => state.makePayment.status)
     const [cardDetails, setCradDetails] = useState({});
     const [selectedCard, setSelectedCard] = useState(null);
     const [paymentMethodId, setPaymentMethodId] = useState(null);
-    const [toastVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const buttonText = selectedCard ? "Pay Now" : "Add Card";
     const labelText = selectedCard ? "Pay with selected card" : "Add New Card";
     const stripeKey = "pk_test_51OmriNHtA3SK3biQ6qq8s1IrRmnZ08NsSlklyXD9GN8gLPGsR4tGqH08FkxkBDvPrEMIPLEIQMkAc8NrASOByh6E00ayjZlEWe"
-    //console.log(paymentPayload?.sessionItem)
 
     const fetchCardInfo = (card) => {
         setSelectedCard(card);
@@ -65,7 +62,6 @@ const PaymentScreen = ({ navigation, route }) => {
     };
 
     const AddPaymentMethod = async () => {
-        console.log(cardDetails.card)
         if (!selectedCard) {
             try {
                 const { paymentMethod, error } = await createPaymentMethod({
@@ -93,19 +89,17 @@ const PaymentScreen = ({ navigation, route }) => {
     };
 
     const callCreateCustomerAPI = (paymentMethodId) => {
-        console.log(' paymentMethod id :', paymentMethodId);
         dispatch(createCustomer({
             user_id: paymentPayload?.coachee_id,
             paymentMethodId: paymentMethodId
         })).then((result) => {
-            console.log('customer creation', result?.payload)
             if (result?.payload?.success === true) {
                 renderSuccessMessage(result?.payload?.message, false)
                 setTimeout(() => {
                     sendPayment(paymentMethodId);
                 }, 3000);
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', result?.payload?.message)
             }
 
 
@@ -113,16 +107,13 @@ const PaymentScreen = ({ navigation, route }) => {
 
     };
 
-    console.log('paymentPayload', paymentPayload)
 
     const sendPayment = (paymentMethodId) => {
         const sendPayemntPayload = {
             ...paymentPayload,
             paymentMethodId: paymentMethodId
         }
-        //console.log('sendPayemntPayload', sendPayemntPayload)
         dispatch(makePayment(sendPayemntPayload)).then((result) => {
-            console.log('send payment', result?.payload)
             if (result?.payload?.success == true) {
 
                 dispatch(createNotification(
@@ -141,7 +132,7 @@ const PaymentScreen = ({ navigation, route }) => {
 
                 renderSuccessMessage(result?.payload?.message, true)
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', result?.payload?.message)
             }
         })
 
@@ -155,30 +146,13 @@ const PaymentScreen = ({ navigation, route }) => {
     const renderSuccessMessage = (message, displayType) => {
 
         if (displayType) {
-            setMessage('Success')
-            setDescription(message)
-            setIsVisible(true);
-            setToastType('success')
+            showAlert("Success", 'success', message)
             setTimeout(() => {
-                //handleCloseModal();
                 resetNavigation(navigation, "WellcoinScreen")
             }, 3000);
         }
 
 
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={toastVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
     }
 
     const handleBackPress = () => {
@@ -208,14 +182,6 @@ const PaymentScreen = ({ navigation, route }) => {
                     justifyContent: 'center',
                     paddingHorizontal: 20
                 }}>
-
-                    {renderToastMessage()}
-
-                    {/* <PaymentCardList
-                        onCardSelect={fetchCardInfo}
-                        selectedCard={selectedCard}
-                        onCardDeselect={handleCardDeselect}
-                    /> */}
 
                     <Text style={{
                         fontFamily: fonts.fontsType.semiBold,

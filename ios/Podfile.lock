@@ -995,6 +995,10 @@ PODS:
     - React-Core
   - react-native-date-picker (4.3.5):
     - React-Core
+  - react-native-geolocation (3.4.0):
+    - glog
+    - RCT-Folly (= 2022.05.16.00)
+    - React-Core
   - react-native-image-picker (7.1.1):
     - glog
     - RCT-Folly (= 2022.05.16.00)
@@ -1210,42 +1214,27 @@ PODS:
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
   - SocketRocket (0.6.1)
-  - Stripe (23.27.2):
-    - StripeApplePay (= 23.27.2)
-    - StripeCore (= 23.27.2)
-    - StripePayments (= 23.27.2)
-    - StripePaymentsUI (= 23.27.2)
-    - StripeUICore (= 23.27.2)
-  - stripe-react-native (0.37.3):
+  - Stripe (22.8.4):
+    - Stripe/Stripe3DS2 (= 22.8.4)
+    - StripeApplePay (= 22.8.4)
+    - StripeCore (= 22.8.4)
+    - StripeUICore (= 22.8.4)
+  - stripe-react-native (0.19.0):
     - React-Core
-    - Stripe (~> 23.27.0)
-    - StripeApplePay (~> 23.27.0)
-    - StripeFinancialConnections (~> 23.27.0)
-    - StripePayments (~> 23.27.0)
-    - StripePaymentSheet (~> 23.27.0)
-    - StripePaymentsUI (~> 23.27.0)
-  - StripeApplePay (23.27.2):
-    - StripeCore (= 23.27.2)
-  - StripeCore (23.27.2)
-  - StripeFinancialConnections (23.27.2):
-    - StripeCore (= 23.27.2)
-    - StripeUICore (= 23.27.2)
-  - StripePayments (23.27.2):
-    - StripeCore (= 23.27.2)
-    - StripePayments/Stripe3DS2 (= 23.27.2)
-  - StripePayments/Stripe3DS2 (23.27.2):
-    - StripeCore (= 23.27.2)
-  - StripePaymentSheet (23.27.2):
-    - StripeApplePay (= 23.27.2)
-    - StripeCore (= 23.27.2)
-    - StripePayments (= 23.27.2)
-    - StripePaymentsUI (= 23.27.2)
-  - StripePaymentsUI (23.27.2):
-    - StripeCore (= 23.27.2)
-    - StripePayments (= 23.27.2)
-    - StripeUICore (= 23.27.2)
-  - StripeUICore (23.27.2):
-    - StripeCore (= 23.27.2)
+    - Stripe (~> 22.8.1)
+    - StripeFinancialConnections (~> 22.8.1)
+  - Stripe/Stripe3DS2 (22.8.4):
+    - StripeApplePay (= 22.8.4)
+    - StripeCore (= 22.8.4)
+    - StripeUICore (= 22.8.4)
+  - StripeApplePay (22.8.4):
+    - StripeCore (= 22.8.4)
+  - StripeCore (22.8.4)
+  - StripeFinancialConnections (22.8.4):
+    - StripeCore (= 22.8.4)
+    - StripeUICore (= 22.8.4)
+  - StripeUICore (22.8.4):
+    - StripeCore (= 22.8.4)
   - Toast (4.1.1)
   - Yoga (1.14.0)
 
@@ -1306,6 +1295,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - react-native-agora (from `../node_modules/react-native-agora`)
   - react-native-date-picker (from `../node_modules/react-native-date-picker`)
+  - "react-native-geolocation (from `../node_modules/@react-native-community/geolocation`)"
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
@@ -1368,9 +1358,6 @@ SPEC REPOS:
     - StripeApplePay
     - StripeCore
     - StripeFinancialConnections
-    - StripePayments
-    - StripePaymentSheet
-    - StripePaymentsUI
     - StripeUICore
     - Toast
 
@@ -1438,6 +1425,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-agora"
   react-native-date-picker:
     :path: "../node_modules/react-native-date-picker"
+  react-native-geolocation:
+    :path: "../node_modules/@react-native-community/geolocation"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
   react-native-in-app-review:
@@ -1563,6 +1552,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 9ee041e1d7be96da6d76a251f92e72b711c651d6
   react-native-agora: 9c9eb77ed83d66b35a49b733bbbd2abb4c6eb83c
   react-native-date-picker: 90d1d60802a20085125657940b944f2bb4e5c113
+  react-native-geolocation: c15fa78a481451620baff55cfc2e04a52e033dd7
   react-native-image-picker: 1a7cd3224036e080fe46bcb955f2eb42fcbf7acc
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-netinfo: bdb108d340cdb41875c9ced535977cac6d2ff321
@@ -1600,15 +1590,12 @@ SPEC CHECKSUMS:
   RNSVG: ba3e7232f45e34b7b47e74472386cf4e1a676d0a
   RNVectorIcons: 210f910e834e3485af40693ad4615c1ec22fc02b
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
-  Stripe: ec902be2e477aa8c6cfb758f4ed9a4603c4b5d63
-  stripe-react-native: 184a46a36ed449ff9f0ac5938ce65b20fc7bf0a2
-  StripeApplePay: 55e0fe7095d18bc6d8390cab176692c801d865c6
-  StripeCore: 55c1fb4ec4edd61243c59839cef592b0ac4c469a
-  StripeFinancialConnections: e646628ca798faa26bf794d8dc76c17ddb8405e4
-  StripePayments: 1702ca63bf83c5170330bc4fbf587acb869a7da1
-  StripePaymentSheet: bf96500ca25dadf72079e4f256d827955dd7d1ef
-  StripePaymentsUI: a51fd3468d9944b602f79ddae26d83e6dd2d9048
-  StripeUICore: 436db87a21e3bb45b7a6a90c114a6d21c35b4be0
+  Stripe: 59f6659e8ea413def19c97c57e23f5ec6ea48cf8
+  stripe-react-native: 0e50141806454839806143db5ce514a0cddd4d12
+  StripeApplePay: 6e9aebd3d248464836e9fbdaef6e5fb1817d56a6
+  StripeCore: 193f27552fb98108ebfe0df11651fe5f38948305
+  StripeFinancialConnections: 955c345ada7d0dff1a9bd15c4ebc97eacce4ac75
+  StripeUICore: 6a5bbea0164d63bd91000f001903e7901859e1a4
   Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
   Yoga: e64aa65de36c0832d04e8c7bd614396c77a80047
 

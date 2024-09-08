@@ -21,18 +21,16 @@ import { createNotification } from '../../redux/NotificationModuleSlices/createN
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
 import getCurrentLanguage from '../../utilities/currentLanguage';
+import { useAlert } from '../../providers/AlertContext';
 const RequestedSessionDetail = ({ navigation }) => {
     const { t } = useCustomTranslation()
     const currentLanguage = getCurrentLanguage();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { status } = useSelector((state) => state.sessionAcceptORReject)
     const sessionStatus = useSelector((state) => state.sessionDetailById.status)
     const { sessionId } = useSelector((state) => state.setSessionId)
     const { role } = useSelector((state) => state.userLogin)
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const [sessionDetail, setSessionDetail] = useState({});
     const BADGE_IMG = require('../../assets/images/main_stays_badge_img.png')
 
@@ -42,8 +40,6 @@ const RequestedSessionDetail = ({ navigation }) => {
         silver: '#C0C0C0',
         bronze: '#CD7F32'
     };
-    //console.log('test', sessionDetail)
-
 
     const handleBackPress = () => {
         resetNavigation(navigation, sessionId?.route)
@@ -81,43 +77,23 @@ const RequestedSessionDetail = ({ navigation }) => {
             if (result?.payload?.success === true) {
                 if (sessionSatus == 'accepted') {
                     dispatch(createNotification(notificationPayload)).then((result) => {
-                        // console.log('create notification', result?.payload?.success)
+                       
                     })
                 }
-                renderSuccessMessage(sessionSatus === 'accepted' ?
+                showAlert("Success", "success", sessionSatus === 'accepted' ?
                     t('requestAcceptedMessage') : t('requestRejectedMessage'))
+
+
+                setTimeout(() => {
+                    resetNavigation(navigation, sessionId?.route)
+                }, 3000);
             }
             else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", "error", result?.payload?.message)
             }
         })
     }
 
-
-    const renderSuccessMessage = (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-
-        setTimeout(() => {
-            resetNavigation(navigation, sessionId?.route)
-        }, 3000);
-
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     if (sessionStatus === 'loading') {
         return <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
@@ -211,9 +187,7 @@ const RequestedSessionDetail = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* <View>
-                {renderToastMessage()}
-            </View> */}
+
             <View style={styles.secondContainer}>
 
                 <HeaderComponent
@@ -223,8 +197,6 @@ const RequestedSessionDetail = ({ navigation }) => {
                     navigation={navigation}
                     navigateTo={sessionId?.route}
                 />
-
-                {renderToastMessage()}
 
                 {renderProfile()}
                 <ScrollView

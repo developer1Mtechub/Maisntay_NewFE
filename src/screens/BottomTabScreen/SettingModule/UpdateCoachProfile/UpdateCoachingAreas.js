@@ -19,11 +19,13 @@ import LinearGradient from 'react-native-linear-gradient';
 import useBackHandler from '../../../../components/useBackHandler';
 import useCustomTranslation from '../../../../utilities/useCustomTranslation';
 import getCurrentLanguage from '../../../../utilities/currentLanguage';
+import { useAlert } from '../../../../providers/AlertContext';
 
 const UpdateCoachingAreas = ({ navigation }) => {
     const { t } = useCustomTranslation();
     const currentLanguage = getCurrentLanguage();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const coachingAreasList = useSelector((state) => state.coachingAreas.coachingAreasList);
     const status = useSelector((state) => state.coachingAreas.status);
     const profileStatus = useSelector((state) => state.coacheeProfile.status);
@@ -51,33 +53,18 @@ const UpdateCoachingAreas = ({ navigation }) => {
         });
         return coachArea ? coachArea.id : null;
     };
-    
+
     useEffect(() => {
         if (anyData?.anyData && coachingAreasList?.result) {
             const coachAreaIds = anyData.anyData.map(item => {
                 const nameToCheck = currentLanguage === "de" ? item.german_name : item.name;
                 return getCoachAreaIdByName(nameToCheck);
             });
-            console.log("Coach Area IDs:", coachAreaIds);
             setSelectedAreas(coachAreaIds);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [anyData, coachingAreasList]);
 
-    // const getCoachAreaIdByName = (name) => {
-    //     const coachArea = coachingAreasList?.result?.find(area => currentLanguage === "de" ? area?.german_name : area?.name === name);
-    //     return coachArea ? coachArea.id : null;
-    // };
-
-    // useEffect(() => {
-    //     console.log(anyData?.anyData)
-    //     if (anyData && anyData.anyData && coachingAreasList && coachingAreasList.result) {
-    //         const coachAreaIds = anyData?.anyData?.map(name => getCoachAreaIdByName(currentLanguage === "de" ? name?.german_name : name?.name));
-    //         console.log("Coach Area IDs:", coachAreaIds);
-    //         setSelectedAreas(coachAreaIds);
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [anyData, coachingAreasList]);
 
     const handleCheckboxClick = (areaId) => {
 
@@ -110,7 +97,7 @@ const UpdateCoachingAreas = ({ navigation }) => {
 
         dispatch(postCoacheeProfile(formData)).then((result) => {
             if (result?.payload?.success == true) {
-                renderSuccessMessage('Changes Saved Successfully.')
+                showAlert("Success", "success", result?.payload?.message)
                 setTimeout(() => {
                     if (anyData?.route) {
                         resetNavigation(navigation, anyData?.route)
@@ -122,33 +109,11 @@ const UpdateCoachingAreas = ({ navigation }) => {
 
 
             } else {
-                renderErrorMessage(result?.payload?.message ? result?.payload?.message
-                    : 'Network Error')
+                showAlert("Error", "error", result?.payload?.message || 'Network Error')
             }
         })
     }
 
-
-    const renderSuccessMessage = async (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     const renderLanguageItem = ({ item }) => {
         const isSelected = selectedAreas.includes(item.id);
@@ -200,7 +165,6 @@ const UpdateCoachingAreas = ({ navigation }) => {
                     // marginTop: hp('5%'),
                     marginStart: 20
                 }} />
-            {renderToastMessage()}
             <Text style={{
                 fontFamily: fonts.fontsType.bold,
                 fontSize: 27,

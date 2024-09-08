@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
         marginTop: 35,
-        zIndex: 30
+        zIndex: 1000
 
     },
     languageOption: {

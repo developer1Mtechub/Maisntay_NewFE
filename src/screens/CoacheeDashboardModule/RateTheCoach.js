@@ -25,10 +25,12 @@ import FullScreenLoader from '../../components/CustomLoader';
 import { setCategoryId } from '../../redux/DashboardSlices/setCategoryIdSlice';
 import { setSessionId } from '../../redux/Sessions/setSessionIdSlice';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
+import { useAlert } from '../../providers/AlertContext';
 
 const RateTheCoach = ({ navigation }) => {
     const { t } = useCustomTranslation();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { status } = useSelector((state) => state.rateTheCoach)
     const sessionStatus = useSelector((state) => state.sessionDetailById.status)
     const { user_id } = useSelector((state) => state.userLogin)
@@ -150,7 +152,7 @@ const RateTheCoach = ({ navigation }) => {
                 })
                 setIsSheetVisible(true)
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", "error", result?.payload?.message)
             }
         })
 
@@ -167,19 +169,6 @@ const RateTheCoach = ({ navigation }) => {
             resetNavigation(navigation, 'CoachingList')
         }, 3000);
 
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
     }
 
     if (loading) {
@@ -247,7 +236,6 @@ const RateTheCoach = ({ navigation }) => {
                     }}
                 />
             </View>
-            {renderToastMessage()}
             <CustomLayout>
                 <View style={{ margin: 20, }}>
 

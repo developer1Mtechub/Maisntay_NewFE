@@ -28,11 +28,13 @@ import { setAnyData, setUserId } from '../../redux/setAnyTypeDataSlice';
 import TextCheckBox from '../../components/testCheckbox';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
 import getCurrentLanguage from '../../utilities/currentLanguage';
+import { useAlert } from '../../providers/AlertContext';
 
 
 const CoachDetails = ({ navigation }) => {
     const dispatch = useDispatch();
     const { t } = useCustomTranslation()
+    const { showAlert } = useAlert()
     const currentLanguage = getCurrentLanguage();
     const { coachDetails, status, error } = useSelector((state) => state.getCoachDetail)
     const { coachSections } = useSelector((state) => state.coachSection)
@@ -46,10 +48,6 @@ const CoachDetails = ({ navigation }) => {
     const [selectedTime, setSelectedTime] = useState(null);
     const [durationSheetVisible, setDurationSheetVisible] = useState(false);
     const [timeSlots, setTimeSlots] = useState([]);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const [showFullDescription, setShowFullDescription] = useState(false);
     const [selectedDuration, setSelectedDuration] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -142,23 +140,11 @@ const CoachDetails = ({ navigation }) => {
         setSelectedTime(time);
     };
 
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     const handleReviewSession = () => {
 
         if (selectedDuration === null) {
-            renderErrorMessage(t('selectAtleastOneDurationError'))
+            showAlert("Success", "success", t('selectAtleastOneDurationError'))
             return;
         }
 
@@ -277,7 +263,6 @@ const CoachDetails = ({ navigation }) => {
                             borderRadius: 25,
                         }}
                     />
-                    {renderToastMessage()}
 
                     <View style={{ padding: 10, }}>
 
@@ -289,15 +274,6 @@ const CoachDetails = ({ navigation }) => {
                                 )
                             }
                         </ScrollView>
-
-
-                        {/* <FlatList
-                            data={durations?.duration?.details}
-                            showsVerticalScrollIndicator={false}
-                            renderItem={renderDuration}
-                            keyExtractor={(item, index) => index + item}
-                        /> */}
-
 
                     </View>
 
@@ -352,7 +328,6 @@ const CoachDetails = ({ navigation }) => {
                     }}
                     customContainerStyle={{ marginTop: 0 }}
                 />
-                {console.log(coachDetails?.avg_rating)}
 
                 <ProfileCard
                     profile_pic={coachDetails?.details?.profile_pic || coachDetails?.profile_pic}
@@ -369,7 +344,6 @@ const CoachDetails = ({ navigation }) => {
                         navigateToCoachReviews();
                     }}
                 />
-                {/* {renderToastMessage()} */}
                 <ScrollView
                     showsVerticalScrollIndicator={false}
                     style={{}}>

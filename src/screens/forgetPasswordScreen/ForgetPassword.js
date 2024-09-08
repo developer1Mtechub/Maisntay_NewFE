@@ -27,6 +27,7 @@ import CustomLayout from "../../components/CustomLayout";
 import useBackHandler from "../../components/useBackHandler";
 import useCustomTranslation from "../../utilities/useCustomTranslation";
 import LanguageSelector from "../../components/LanguageSelector";
+import { useAlert } from "../../providers/AlertContext";
 
 
 const validationSchema = Yup.object().shape({
@@ -36,23 +37,17 @@ const validationSchema = Yup.object().shape({
 const ForgetPassword = ({ navigation }) => {
   const { t } = useCustomTranslation();
   const dispatch = useDispatch();
+  const { showAlert } = useAlert()
   const { status, error } = useSelector((state) => state.emailVerification);
-  const [isVisible, setIsVisible] = useState(false);
-  const [message, setMessage] = useState('');
-  const [description, setDescription] = useState('');
-  const [toastType, setToastType] = useState('');
 
   const handleSendVerificationEmail = (email) => {
     const sendEmail = {
       email: email
     }
     dispatch(sendEmailVerification(sendEmail)).then((result) => {
-      console.log('result', result?.payload)
+
       if (result?.payload?.success === true) {
-        setMessage('Success')
-        setDescription(result?.payload?.message)
-        setIsVisible(true);
-        setToastType('success')
+        showAlert("Success", "success", result?.payload?.message)
         const params = {
           email: email,
           code: result?.payload?.code
@@ -63,20 +58,12 @@ const ForgetPassword = ({ navigation }) => {
 
 
       } else {
-        setMessage('Error')
-        setDescription(result?.payload?.message)
-        setIsVisible(true);
-        setToastType('error')
+        showAlert("Error", "error", result?.payload?.message)
       }
     });
   };
 
 
-  const renderToastMessage = () => {
-    return <CustomSnackbar visible={isVisible} message={message}
-      messageDescription={description}
-      onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-  }
 
   const handleBackPress = () => {
     resetNavigation(navigation, 'SignIn')
@@ -94,14 +81,16 @@ const ForgetPassword = ({ navigation }) => {
           <HeaderComponent
             navigation={navigation}
             navigateTo={'SignIn'}
-            headerTitle={t('forgetHeaderTitle')} />
+            headerTitle={t('forgetHeaderTitle')}
+            customTextStyle={{flex:0,marginStart:10}}
+             />
           <Image
             source={require("../../assets/images/forgetPassLogo.png")}
             resizeMode="contain"
             style={styles.imageStyle}
           />
         </View>
-        {renderToastMessage()}
+
         <Formik
           initialValues={{ email: "" }}
           validationSchema={validationSchema}

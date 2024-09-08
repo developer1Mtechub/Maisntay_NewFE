@@ -13,12 +13,14 @@ import CustomSnackbar from '../../../components/CustomToast';
 import { reportUser } from '../../../redux/reportChatUserSlice';
 import { resetNavigation } from '../../../utilities/resetNavigation';
 import useBackHandler from '../../../components/useBackHandler';
+import { useAlert } from '../../../providers/AlertContext';
 
 const reportReasons = ["Scam", "Fake Profile", "Inappropriate Picture", "Bad behavior", "Underage"];
 
 const ReportUser = ({ navigation, route }) => {
     const { receiverId } = route.params
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { status } = useSelector((state) => state.reportChatUser);
     const { user_id } = useSelector(state => state.userLogin)
     const [isVisible, setIsVisible] = useState(false);
@@ -35,36 +37,17 @@ const ReportUser = ({ navigation, route }) => {
             reported: selectedUserId,
             reason: selectedReason
         })).then((result) => {
-            //console.log('result', result?.payload);
             if (result?.payload?.success === true) {
-                renderSuccessMessage(result?.payload?.message)
+                showAlert("Success", 'success', result?.payload?.message)
+                setTimeout(() => {
+                    resetNavigation(navigation, 'Dashboard', { screen: 'Chat' })
+                }, 3000);
+                //renderSuccessMessage(result?.payload?.message)
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', result?.payload?.message)
+                //renderErrorMessage(result?.payload?.message)
             }
         })
-    }
-
-    const renderSuccessMessage = async (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-        setTimeout(() => {
-            resetNavigation(navigation, 'Dashboard', { screen: 'Chat' })
-        }, 3000);
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
     }
 
     const renderItem = ({ item, index }) => (
@@ -121,7 +104,6 @@ const ReportUser = ({ navigation, route }) => {
                 marginTop: 20,
                 width: wp('90%')
             }}>Tell us the reason why are you reporting Smith?</Text>
-            {renderToastMessage()}
             <View style={{ padding: 20, marginTop: hp('2%'), flex: 2 }}>
 
                 <FlatList

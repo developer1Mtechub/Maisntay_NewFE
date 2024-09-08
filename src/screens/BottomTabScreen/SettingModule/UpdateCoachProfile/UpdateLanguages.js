@@ -19,10 +19,12 @@ import { postCoacheeProfile } from '../../../../redux/CoacheeSlices/submitCoache
 import { useIsFocused } from '@react-navigation/native';
 import useBackHandler from '../../../../components/useBackHandler';
 import useCustomTranslation from '../../../../utilities/useCustomTranslation';
+import { useAlert } from '../../../../providers/AlertContext';
 
 const UpdateLanguages = ({ navigation }) => {
     const { t } = useCustomTranslation();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const languages = useSelector((state) => state.languages.languages);
     const { role } = useSelector((state) => state.userLogin);
     const status = useSelector((state) => state.languages.status);
@@ -32,10 +34,7 @@ const UpdateLanguages = ({ navigation }) => {
     const [searchText, setSearchText] = useState('');
     const [selectedLanguages, setSelectedLanguages] = useState([]);
     const [isFocused, setIsFocused] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
+
 
     const handleBackPress = () => {
         resetNavigation(navigation, anyData?.route ? anyData?.route : 'CoachSettingProfile')
@@ -113,26 +112,6 @@ const UpdateLanguages = ({ navigation }) => {
     );
 
 
-    const renderSuccessMessage = async (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     const handleSubmitProfile = () => {
         const objectConverted = "{" + selectedLanguages.join(",") + "}";
@@ -142,7 +121,7 @@ const UpdateLanguages = ({ navigation }) => {
 
         dispatch(postCoacheeProfile(formData)).then((result) => {
             if (result?.payload?.success == true) {
-                renderSuccessMessage(t('saveChangedMsg'))
+                showAlert("Success", "success", t('saveChangedMsg'))
                 setTimeout(() => {
                     if (anyData?.route) {
                         resetNavigation(navigation, anyData?.route)
@@ -154,8 +133,8 @@ const UpdateLanguages = ({ navigation }) => {
 
 
             } else {
-                renderErrorMessage(result?.payload?.message ? result?.payload?.message
-                    : 'Network Error')
+                showAlert("Error", "error", result?.payload?.message || 'Network Error')
+
             }
         })
     }
@@ -170,7 +149,6 @@ const UpdateLanguages = ({ navigation }) => {
                     // marginTop: hp('5%'),
                     marginStart: 20
                 }} />
-            {renderToastMessage()}
             <View style={{ padding: 20, marginTop: hp('2%'), flex: 2 }}>
 
                 <View style={{

@@ -21,6 +21,7 @@ import { resetNavigation } from "../../../utilities/resetNavigation";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import useBackHandler from "../../../components/useBackHandler";
 import useCustomTranslation from "../../../utilities/useCustomTranslation";
+import { useAlert } from "../../../providers/AlertContext";
 
 const validationSchema = Yup.object().shape({
     old_password: Yup.string().required("Old Password is required"),
@@ -38,17 +39,13 @@ const validationSchema = Yup.object().shape({
 
 const ChangePassword = ({ navigation }) => {
     const { t } = useCustomTranslation()
+    const { showAlert } = useAlert()
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const dispatch = useDispatch();
     const { status, error } = useSelector((state) => state.changePassword);
     const [isPasswordStrong, setIsPasswordStrong] = useState(false);
-
 
     const checkPasswordStrength = (password) => {
         const strongRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.*[a-zA-Z]).{8,}$/;
@@ -61,12 +58,12 @@ const ChangePassword = ({ navigation }) => {
 
 
         if (password !== confirmPassword) {
-            renderErrorMessage(t('passwordsDoNotMatch'));
+            showAlert("Error", 'error', t('passwordsDoNotMatch'))
             return
         }
 
         if (!isPasswordStrong) {
-            renderErrorMessage(t('enterStrongPassword'));
+            showAlert("Error", 'error', t('enterStrongPassword'))
             return;
         }
 
@@ -74,43 +71,18 @@ const ChangePassword = ({ navigation }) => {
             currentPassword: old_password,
             newPassword: password
         }
-
-        // console.log('payload', payload)
-
         dispatch(changePassword(payload)).then((result) => {
-            //console.log(result?.payload)
             if (result?.payload?.success == true) {
-                renderSuccessMessage(t('passwordChangedSuccessfully'))
+                showAlert("Success", 'success', t('passwordChangedSuccessfully'))
+                setTimeout(() => {
+                    resetNavigation(navigation, 'Dashboard', { screen: 'Setting' })
+                }, 3000);
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', t('errorMessage'))
             }
         });;
     };
 
-    const renderSuccessMessage = (message) => {
-        setMessage(t('successMessage'))
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-        setTimeout(() => {
-            resetNavigation(navigation, 'Dashboard', { screen: 'Setting' })
-        }, 3000);
-
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage(t('errorMessage'))
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     const handleBackPress = () => {
         resetNavigation(navigation, "Dashboard", { screen: "Setting" })
@@ -128,7 +100,6 @@ const ChangePassword = ({ navigation }) => {
                     params={{ screen: 'Setting' }}
                 />
             </View>
-            {renderToastMessage()}
             <Formik
                 initialValues={{ password: "", confirmPassword: "", old_password: "" }}
                 validationSchema={validationSchema}

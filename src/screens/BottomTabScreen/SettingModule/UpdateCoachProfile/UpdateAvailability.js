@@ -21,9 +21,11 @@ import { fetchCoachSection } from '../../../../redux/DashboardSlices/getSectionB
 import { updateAvailability } from '../../../../redux/coachSlices/updateAvailabilitySlice';
 import useBackHandler from '../../../../components/useBackHandler';
 import { t } from 'i18next';
+import { useAlert } from '../../../../providers/AlertContext';
 
 const UpdateAvailability = ({ navigation }) => {
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { status, error } = useSelector((state) => state.updateAvailabilitySection);
     const { user_id } = useSelector((state) => state.anyData);
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -42,14 +44,9 @@ const UpdateAvailability = ({ navigation }) => {
     const [departureSheetVisible, setDepatSheetVisible] = useState(false);
     const [date, setDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
 
     useEffect(() => {
         dispatch(fetchCoachSection({ coachId: user_id })).then((result) => {
-            console.log('test', result?.payload?.sections?.section_list)
             if (result?.payload?.sections?.section_list != null) {
                 setAvailability(result?.payload?.sections?.section_list[0].section_details)
             }
@@ -57,23 +54,12 @@ const UpdateAvailability = ({ navigation }) => {
         })
     }, [dispatch, user_id])
 
-    //console.log('availability', availability)
-
-
     const toggleDatePicker = (day, index = null) => {
         setDepatSheetVisible(true);
         setSelectedDay(day);
         setSelectedTimeIndex(index);
     };
 
-    // const toggleDay = (day) => {
-    //     setSelectedDay(day);
-    //     setAvailability((prevAvailability) => {
-    //         const updatedAvailability = { ...prevAvailability };
-    //         updatedAvailability[day].enabled = !updatedAvailability[day].enabled;
-    //         return updatedAvailability;
-    //     });
-    // };
 
     const toggleDay = (day) => {
         setSelectedDay(day);
@@ -86,24 +72,6 @@ const UpdateAvailability = ({ navigation }) => {
             return updatedAvailability;
         });
     };
-
-    // const addAvailability = (startTime, endTime) => {
-    //     if (selectedDay && startTime && endTime) {
-    //         setAvailability((prevAvailability) => {
-    //             const updatedAvailability = { ...prevAvailability };
-    //             updatedAvailability[selectedDay]?.timeSessions.unshift({
-    //                 start: moment(startTime).format('hh:mm'),
-    //                 end: moment(endTime).format('hh:mm'),
-    //             });
-    //             return updatedAvailability;
-    //         });
-    //         setDepatSheetVisible(false);
-    //         setSelectedIndex(0);
-    //         setDate(new Date());
-    //         setEndDate(new Date());
-    //     }
-
-    // }
 
     const addAvailability = (day, startTime, endTime) => {
         setAvailability(prevAvailability => {
@@ -153,13 +121,6 @@ const UpdateAvailability = ({ navigation }) => {
         });
     };
 
-    // const removeTimeSession = (day, index) => {
-    //     setAvailability((prevAvailability) => {
-    //         const updatedAvailability = { ...prevAvailability };
-    //         updatedAvailability[day].timeSessions.splice(index, 1);
-    //         return updatedAvailability;
-    //     });
-    // };
 
     const renderDepartureSheet = () => {
         return <BottomSheet
@@ -257,39 +218,19 @@ const UpdateAvailability = ({ navigation }) => {
             sectionDetails: availability
         }
         dispatch(updateAvailability(availabilityPayload)).then((result) => {
-            console.log('reee', result?.payload)
             if (result?.payload?.success == true) {
-                renderSuccessMessage('Changes saved successfully')
+                showAlert("Error", 'error', 'Changes saved successfully')
                 setTimeout(() => {
                     resetNavigation(navigation, 'CoachSettingProfile')
                 }, 3000);
 
             }
             else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', result?.payload?.message)
             }
         })
     }
 
-    const renderSuccessMessage = async (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     const removeSeconds = (time) => {
         const timeParts = time.split(':');
@@ -315,17 +256,7 @@ const UpdateAvailability = ({ navigation }) => {
                 headerTitle={t('myAvailabilty')}
                 customContainerStyle={{ marginStart: 20 }}
             />
-            {renderToastMessage()}
-            {/* <Text style={{
-                fontFamily: fonts.fontsType.bold,
-                fontSize: 25,
-                fontWeight: fonts.fontWeight.bold,
-                color: 'rgba(49, 40, 2, 1)',
-                alignSelf: 'center',
-                textAlign: 'center',
-                marginTop: 20,
-            }}>Set Your Availability</Text> */}
-
+ 
             <Text style={{
                 fontFamily: fonts.fontsType.regular,
                 fontSize: 15,
