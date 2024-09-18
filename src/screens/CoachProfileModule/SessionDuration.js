@@ -14,15 +14,13 @@ import { postSessionDurations } from '../../redux/coachSlices/postSessionDuratio
 import CustomLayout from '../../components/CustomLayout';
 import useBackHandler from '../../components/useBackHandler';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
+import { useAlert } from '../../providers/AlertContext';
 
 const SessionDuration = ({ navigation }) => {
-    const {t} = useCustomTranslation();
+    const { t } = useCustomTranslation();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { status, error } = useSelector((state) => state.sessionDurations)
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const [inputValues, setInputValues] = useState({
         thirtyMinutes: "",
         sixtyMinutes: "",
@@ -71,51 +69,17 @@ const SessionDuration = ({ navigation }) => {
             durationDetails: sessionPayload
         }
         dispatch(postSessionDurations(newSessionPayload)).then((result) => {
-            console.log('final result', JSON.stringify(result?.payload))
             if (result?.payload?.success === true) {
-                renderSuccessMessage('Session Added Successfully');
+                showAlert("Success", "success", 'Session Added Successfully')
+                setTimeout(() => {
+                    resetNavigation(navigation, "CreateStripeAccount")
+                }, 3000);
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", "error", result?.payload?.message)
             }
         });
-
-        //navigation.navigate('CoachProfileCompletion')
-        //dispatch data here to call api...
     }
 
-    const renderSuccessMessage = (message) => {
-
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-        setTimeout(() => {
-            resetNavigation(navigation, "CreateStripeAccount")
-            //resetNavigation(navigation, "CoachProfileCompletion")
-        }, 3000);
-
-    }
-
-    const renderErrorMessage = (message) => {
-
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
-
-    // const handleBackPress = () => {
-    //     resetNavigation(navigation, 'CoachProfile')
-    //     return true;
-    //   };
-
-    //   useBackHandler(handleBackPress)
 
     return (
         <CustomLayout>
@@ -142,7 +106,6 @@ const SessionDuration = ({ navigation }) => {
                         marginTop: 10,
                         marginBottom: 10
                     }}>{t('setSessionTitle')}</Text>
-                    {renderToastMessage()}
                     {/* First View */}
                     <LinearGradient
                         colors={isChecked1 ? ['rgba(7, 63, 61, 1)', 'rgba(15, 109, 106, 1)', 'rgba(15, 109, 106, 1)'] : ['rgba(238, 238, 238, 1)', 'rgba(238, 238, 238, 1)', 'rgba(238, 238, 238, 1)']}

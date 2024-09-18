@@ -16,23 +16,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setSessionEnded } from '../../redux/sessionEndedSlice';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
 import { heightPercentageToDP } from 'react-native-responsive-screen';
+import { useAlert } from '../../providers/AlertContext';
 // const socketIo = io("https://mainstays-be.mtechub.com/");
 
 const VideoCall = ({ navigation, route }) => {
     const { t } = useCustomTranslation()
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { sessionDetail } = route.params;
-    //console.log(sessionDetail)
+
     const duration = 5;
     const { role } = useSelector((state) => state.userLogin);
     const { sessionEnded } = useSelector((state) => state.sessionEnded);
     const [videoCall, setCall] = useState(true);
     const [sessionStarted, setSessionStarted] = useState(false);
     const [remainingTime, setRemainingTime] = useState(0);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const [remainingTimeInMinutes, setRemainingTimeInMinutes] = useState(0);
     const intervalIdRef = useRef(null);
     const socketRef = useRef(null);
@@ -52,7 +50,6 @@ const VideoCall = ({ navigation, route }) => {
     useEffect(() => {
         const checkSessionStarted = async () => {
             const sessionStartedFlag = await AsyncStorage.getItem('session_started');
-            console.log('sessionStartedFlaggggggggg', sessionStartedFlag)
             if (role === 'coachee' && sessionStartedFlag !== 'true') {
                 toggleModal();
                 setModalContent({
@@ -73,7 +70,8 @@ const VideoCall = ({ navigation, route }) => {
     }, [sessionStarted]);
 
     useEffect(() => {
-        const socketIo = io("https://mainstays-be.mtechub.com/");
+        // const socketIo = io("https://mainstays-be.mtechub.com/");
+        const socketIo = io("https://mainstays-be-new.caprover-demo.mtechub.com/");
         socketRef.current = socketIo;
         socketIo.on('connect', () => {
             console.log('Socket connected');
@@ -89,15 +87,11 @@ const VideoCall = ({ navigation, route }) => {
         }
 
         socketIo.on("session started", async (data) => {
-            console.log("Session started:", data);
-            console.log('emmited')
             socketIo.emit("coach-start-session", { sessionId: sessionDetail?.channel_name, coachStarted: true });
             if (data?.sessionId === sessionDetail?.channel_name) {
                 setCall(true)
                 if (role === 'coach') {
                     createNotificationApi("SESSION_STARTED", "SESSION", "Your session has been started")
-                    //setSessionStarted(true)
-                    //await AsyncStorage.setItem('session_started', 'true');
                 }
             }
             const remainingSeconds = Math.floor((data.endTime - Date.now()) / 1000);
@@ -106,18 +100,9 @@ const VideoCall = ({ navigation, route }) => {
 
         if (role === 'coachee') {
             socketIo.on("time update", async (data) => {
-                console.log("Time update:", data);
                 setCall(true)
-                //setSessionStarted(true)
-                //await AsyncStorage.setItem('session_started', 'true');
                 const remainingSeconds = Math.floor(data.remainingTime / 1000);
                 startCountdown(remainingSeconds);
-                // if (data.sessionId === sessionDetail?.channel_name) {
-                //     setCall(true)
-                //     setSessionStarted(true)
-                //     const remainingSeconds = Math.floor(data.remainingTime / 1000);
-                //     startCountdown(remainingSeconds);
-                // }
             });
         }
 
@@ -186,8 +171,6 @@ const VideoCall = ({ navigation, route }) => {
 
         if (role === 'coachee') {
             setCall(false);
-            // await AsyncStorage.removeItem('session_started');
-            // setSessionStarted(false)
             dispatch(setSessionId({
                 session_id: sessionDetail?.channel_name,
                 route: 'VideoCall'
@@ -201,14 +184,13 @@ const VideoCall = ({ navigation, route }) => {
                 session_id: sessionDetail?.channel_name
             })).then(async (result) => {
                 if (result?.payload?.success === true) {
-                    // await AsyncStorage.removeItem('session_started');
-                    // setSessionStarted(false) // shift from coacheee end call
                     createNotificationApi("SESSION_REVIEW", "REVIEWS", "Review the session")
                     renderSuccessMessage('Session Completed.')
 
+
                 } else {
                     Toast.show('Session Not completed.');
-                    renderErrorMessage(result?.payload?.error?.message || result?.payload?.error)
+                    showAlert("Error", 'error', result?.payload?.error?.message || result?.payload?.error)
                 }
             })
         }
@@ -229,13 +211,8 @@ const VideoCall = ({ navigation, route }) => {
 
 
     const renderSuccessMessage = (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
+        showAlert("Success", 'success', message)
         Toast.show('Session Completed');
-        // resetNavigation(navigation, "Dashboard", { screen: 'MyCoaching' })
-        // setCall(false);
         dispatch(setSessionEnded({
             isSessionCompleted: true
         }))
@@ -245,20 +222,6 @@ const VideoCall = ({ navigation, route }) => {
         }, 3000);
 
     }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
-
 
     return videoCall && (
         <View style={styles.container}>
@@ -297,7 +260,6 @@ const VideoCall = ({ navigation, route }) => {
                 }}
             />
 
-            {renderToastMessage()}
 
             <View style={styles.detailContainer}>
                 {<View style={{

@@ -27,20 +27,17 @@ import CustomLayout from "../../components/CustomLayout";
 import useBackHandler from "../../components/useBackHandler";
 import useCustomTranslation from "../../utilities/useCustomTranslation";
 import LanguageSelector from "../../components/LanguageSelector";
+import { useAlert } from "../../providers/AlertContext";
 
 const CELL_COUNT = 4;
 
 const VerificationCode = ({ navigation, route }) => {
   const { t } = useCustomTranslation()
   const dispatch = useDispatch();
+  const { showAlert } = useAlert()
   const { status, error } = useSelector((state) => state.sendVerificationCode);
   const { email, code } = route.params;
-  //console.log(email, code)
   const [value, setValue] = useState('');
-  const [isVisible, setIsVisible] = useState(false);
-  const [message, setMessage] = useState('');
-  const [description, setDescription] = useState('');
-  const [toastType, setToastType] = useState('');
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
     value,
@@ -48,27 +45,22 @@ const VerificationCode = ({ navigation, route }) => {
   });
 
   const handleSendVerificationCode = (code) => {
-    console.log("verfication email", code);
     const sendPayload = {
       email: email,
       code: code
     }
-    //console.log("sendPayload", sendPayload);
+
     dispatch(sendVerificationCode(sendPayload)).then((result) => {
-      //console.log(result?.payload)
       if (result?.payload?.success == true) {
         renderSuccessMessage(result?.payload?.message)
       } else {
-        renderErrorMessage(result?.payload?.message)
+        showAlert("Error", 'error', result?.payload?.message)
       }
     });
   };
 
   const renderSuccessMessage = (message) => {
-    setMessage('Success')
-    setDescription(message)
-    setIsVisible(true);
-    setToastType('success')
+    showAlert("Success", 'success', message)
     setTimeout(() => {
       const params = {
         email: email
@@ -76,29 +68,6 @@ const VerificationCode = ({ navigation, route }) => {
       resetNavigation(navigation, 'ResetPassword', params)
     }, 3000);
 
-  }
-
-  const renderErrorMessage = (message) => {
-    setMessage('Error')
-    setDescription(message)
-    setIsVisible(true);
-    setToastType('error')
-  }
-
-  const handleTimeExpired = () => {
-    // Handle what should happen when the timer expires
-    console.log('Timer expired');
-  };
-
-  const handleResendCode = () => {
-    // Handle the logic to resend the verification code
-    console.log('Resending code...');
-  };
-
-  const renderToastMessage = () => {
-    return <CustomSnackbar visible={isVisible} message={message}
-      messageDescription={description}
-      onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
   }
 
   const handleBackPress = () => {
@@ -117,7 +86,8 @@ const VerificationCode = ({ navigation, route }) => {
             navigation={navigation}
             navigateTo={'ForgetPassword'}
             headerTitle={t('verificationHeaderTitle')}
-            customTextStyle={{ marginStart: wp('15%') }}
+            // customTextStyle={{ marginStart: wp('15%') }}
+            customTextStyle={{ flex: 0, marginStart: 10 }}
           />
           <Image
             source={require("../../assets/images/verification_logo.png")}
@@ -125,7 +95,7 @@ const VerificationCode = ({ navigation, route }) => {
             style={styles.imageStyle}
           />
         </View>
-        {renderToastMessage()}
+
         <View>
           {/* <Text style={styles.welcomeTextStyle}>Verification</Text> */}
           <Text

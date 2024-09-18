@@ -16,10 +16,12 @@ import { resetNavigation } from '../../utilities/resetNavigation';
 import { deleteChat } from '../../redux/ChatModuleSlice/deleteChatSlice';
 import CustomSnackbar from '../../components/CustomToast';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
+import { useAlert } from '../../providers/AlertContext';
 
 const Chat = ({ navigation }) => {
     const { t } = useCustomTranslation();
     const dispatch = useDispatch()
+    const { showAlert } = useAlert()
     const [contacts, setContacts] = useState([]);
     const { user_id } = useSelector(state => state.userLogin)
     const { contactsList, status } = useSelector(state => state.contactsList)
@@ -188,25 +190,10 @@ const Chat = ({ navigation }) => {
             if (result?.payload?.chats.length > 0) {
                 renderSuccessMessage(result?.payload?.message)
             } else {
-                renderErrorMessage('Chat not deleted.')
+                showAlert("Error", 'error', 'Chat not deleted.')
+                //renderErrorMessage('Chat not deleted.')
             }
         })
-        // if (socket) {
-        //     //console.log('Sending delete request...');
-        //     socket.emit("delete messages", {
-        //         senderid: currentUserId,
-        //         receiverid: selectedUserId,
-        //     });
-
-        //     // Listen for acknowledgment from the server
-        //     socket.on('messages deleted', (deletedMessage) => {
-        //         // Fetch updated contacts after deletion
-        //         socket.emit("fetch contacts", { userId: deletedMessage?.senderid });
-        //     });
-
-        // } else {
-        //     console.log('Socket connection not available.');
-        // }
         setIsSheetVisible(false);
     };
 
@@ -239,11 +226,7 @@ const Chat = ({ navigation }) => {
 
     const renderSuccessMessage = async (message) => {
 
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-
+        showAlert("Success", 'success', message)
         setTimeout(async () => {
 
             await dispatch(fetchContactList({ user_id: user_id })).then((result) => {
@@ -251,21 +234,6 @@ const Chat = ({ navigation }) => {
             })
 
         }, 3000);
-    }
-
-    const renderErrorMessage = (message) => {
-
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
     }
 
     const onRefresh = () => {
@@ -304,7 +272,6 @@ const Chat = ({ navigation }) => {
                 </View>
 
             </View>
-            {renderToastMessage()}
 
             <FlatList
                 data={contacts}

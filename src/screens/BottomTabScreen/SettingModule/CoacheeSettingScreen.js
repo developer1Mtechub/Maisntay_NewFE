@@ -313,7 +313,7 @@ const CoacheeSettingScreen = ({ navigation }) => {
                     }
 
                     <View style={styles.badgeHeaderContainer}>
-                        <Text style={styles.badgeTextStyle}>{`${response?.result?.name != undefined && response?.result?.name != "NULL" ? response?.result?.name + ' Badge' : 'Badge not available'}`}</Text>
+                        <Text style={styles.badgeTextStyle}>{`${response?.result?.name != undefined && response?.result?.name != "NULL" ? response?.result?.name + ' Badge' : t('badgeNotAvailable')}`}</Text>
 
                         <Text style={styles.coinsTextStyle}>{`${wellcoins} ${t('wellcoins')}`}</Text>
 

@@ -22,20 +22,18 @@ import { fetchRatingBySession } from '../../redux/CoacheeSlices/getRatingBySessi
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
 import { setReceiverId } from '../../redux/setReceiverIdSlice';
+import { useAlert } from '../../providers/AlertContext';
 
 
 const SessionDetails = ({ navigation }) => {
     const { t } = useCustomTranslation()
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { status } = useSelector((state) => state.sessionAcceptORReject)
     const sessionStatus = useSelector((state) => state.sessionDetailById.status)
     const { sessionId } = useSelector((state) => state.setSessionId)
     const { response } = useSelector((state) => state.ratingBySession)
     const { role } = useSelector((state) => state.userLogin)
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const [sessionDetail, setSessionDetail] = useState({});
 
     const BADGE_IMG = require('../../assets/images/main_stays_badge_img.png')
@@ -89,40 +87,20 @@ const SessionDetails = ({ navigation }) => {
 
                     })
                 }
-                renderSuccessMessage(sessionSatus === 'accepted' ?
+                showAlert("Success", "success", sessionSatus === 'accepted' ?
                     t('requestAcceptedMessage') : t('requestRejectedMessage'))
+
+                    setTimeout(() => {
+                        resetNavigation(navigation, 'CoachingList')
+                    }, 3000);
+
             }
             else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", "error",result?.payload?.message)
             }
         })
     }
 
-
-    const renderSuccessMessage = (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-
-        setTimeout(() => {
-            resetNavigation(navigation, 'CoachingList')
-        }, 3000);
-
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     if (sessionStatus === 'loading') {
         return <View style={{ flex: 1, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
@@ -200,10 +178,6 @@ const SessionDetails = ({ navigation }) => {
             </View>
 
             <ChatIcon width={50} height={50} onPress={() => {
-                // dispatch(setReceiverId({
-                //     receiverId: sessionDetail?.coachee?.coachee_id,
-                //     role: role === 'coach' ? 'coachee' : 'coach'
-                // }))
                 resetNavigation(navigation, 'ChatScreen')
             }} />
 
@@ -215,9 +189,6 @@ const SessionDetails = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View>
-                {renderToastMessage()}
-            </View>
             <View style={styles.secondContainer}>
 
                 <HeaderComponent

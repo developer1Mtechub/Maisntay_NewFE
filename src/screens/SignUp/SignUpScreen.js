@@ -39,6 +39,7 @@ import useBackHandler from '../../components/useBackHandler';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
 import LanguageSelector from '../../components/LanguageSelector';
 import { getLocationWithPermission } from '../../utilities/getUserLocation';
+import { useAlert } from '../../providers/AlertContext';
 
 
 
@@ -46,19 +47,14 @@ const SignUpScreen = ({ navigation, route }) => {
     const { role } = route.params;
     const { t } = useCustomTranslation();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { status } = useSelector((state) => state.registerUser)
     const codeVerifyStatus = useSelector((state) => state.sendVerificationCode.status);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
     const [isSheetVisible, setIsSheetVisible] = useState(false);
-    const [toastType, setToastType] = useState('');
     const [userId, setUserId] = useState('')
-    const [sendPofileData, setSendPofileData] = useState({})
     const [isPasswordStrong, setIsPasswordStrong] = useState(false);
-    const [currentLocation, setCurrentLocation] = useState({});
 
 
     // Validation schema using Yup
@@ -100,31 +96,23 @@ const SignUpScreen = ({ navigation, route }) => {
         }
     }
 
-    const renderErrorMessage = (message) => {
-
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        //setIsSheetVisible(true)
-        setToastType('error')
-    }
     const handleSignup = async (email, password, confirmPassword) => {
 
         const location = await getLocationWithPermission();
         if (location) {
 
             if (email === '' || password === '') {
-                renderErrorMessage("Email and password are required!");
+                showAlert("Error", 'error', "Email and password are required!")
                 return
             }
 
             if (password !== confirmPassword) {
-                renderErrorMessage("Passwords do not match.");
+                showAlert("Error", 'error', "Passwords do not match.")
                 return
             }
 
             if (!isPasswordStrong) {
-                renderErrorMessage("Please enter strong password.");
+                showAlert("Error", 'error', "Please enter strong password.")
                 return;
             }
 
@@ -154,13 +142,13 @@ const SignUpScreen = ({ navigation, route }) => {
                     } else {
                         message = result?.payload?.message
                     }
-                    renderErrorMessage(message)
+                    showAlert("Error", 'error', message)
                 }
 
             })
 
         } else {
-            renderErrorMessage('Enable your location to continue.')
+            showAlert("Error", 'error', 'Enable your location to continue.')
         }
 
 
@@ -169,12 +157,6 @@ const SignUpScreen = ({ navigation, route }) => {
 
     const verifyCoachEmail = () => {
         resetNavigation(navigation, 'SignIn')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
     }
 
 
@@ -222,7 +204,6 @@ const SignUpScreen = ({ navigation, route }) => {
                         customTextStyle={{ flex: 0 }}
                     />
                 </View>
-                {renderToastMessage()}
                 {renderBottomSheet()}
                 <ScrollView keyboardShouldPersistTaps='handled' style={{ flex: 1, marginTop: 20 }}>
                     <View>

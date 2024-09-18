@@ -32,10 +32,6 @@ const SessionReviewBooking = ({ navigation }) => {
     const { sessionId } = useSelector((state) => state.setSessionId)
     const { role } = useSelector((state) => state.userLogin)
     const { user_id } = useSelector(state => state.userLogin)
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const [payload, setPayload] = useState();
     const [showPaymentSheet, setShowPaymentSheet] = useState(false);
     const [sessionDetail, setSessionDetail] = useState({});
@@ -56,7 +52,6 @@ const SessionReviewBooking = ({ navigation }) => {
 
     useEffect(() => {
         dispatch(fetchSessionDetailById({ sessionId: sessionId?.session_id })).then((result) => {
-            //console.log(JSON.stringify(result?.payload))
             if (result?.payload?.success === true) {
                 setSessionDetail(result?.payload?.session?.session_data);
             }
@@ -81,31 +76,6 @@ const SessionReviewBooking = ({ navigation }) => {
         return <FullScreenLoader visible={sessionStatus} />
     }
 
-
-    const renderSuccessMessage = (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-
-        setTimeout(() => {
-            resetNavigation(navigation, 'CoachingList')
-        }, 3000);
-
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     const renderBottomSheet = () => {
         return (
@@ -177,7 +147,6 @@ const SessionReviewBooking = ({ navigation }) => {
                     navigation={navigation}
                     navigateTo={sessionId?.route}
                 />
-                {renderToastMessage()}
 
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
 

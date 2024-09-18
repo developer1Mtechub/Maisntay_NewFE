@@ -11,8 +11,10 @@ import { useSelector } from 'react-redux';
 import CoachHomeSessionList from './Components/CoachHomeSessionList';
 import { resetNavigation } from '../../utilities/resetNavigation';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
+import { useAlert } from '../../providers/AlertContext';
 
 const Explore = ({ navigation }) => {
+    const { showAlert } = useAlert();
     const { role } = useSelector((state) => state.userLogin)
     const [searchText, setSearchText] = useState('');
     const [isFocused, setIsFocused] = useState(false);

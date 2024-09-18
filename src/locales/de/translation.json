@@ -258,10 +258,11 @@
     "payment": "Bezahlung",
     "addNewCard": "Neue Karte hinzufügen",
     "coacheeBadgeDesc": "Für jede Sitzung, an der du teilnimmst, kannst du 10 WellCoins verdienen!",
-    "onboardingText1":"Finde den idealen Coach für deine Bedürfnisse",
-    "onboardingText2":"Buche individuelles Coaching und erziele großartige Resultate",
-    "onboardingText3":"Lass uns gemeinsam gesünder leben!",
-    "getStarted":"jetzt starten",
-    "sessionStartedSoon":"Die Session startet gleich",
-    "waitfor":"Bitte warte, bis der Coach die Session startet."
+    "onboardingText1": "Finde den idealen Coach für deine Bedürfnisse",
+    "onboardingText2": "Buche individuelles Coaching und erziele großartige Resultate",
+    "onboardingText3": "Lass uns gemeinsam gesünder leben!",
+    "getStarted": "jetzt starten",
+    "sessionStartedSoon": "Die Session startet gleich",
+    "waitfor": "Bitte warte, bis der Coach die Session startet.",
+    "noNewNotification": "Keine neuen Benachrichtigungen"
 }

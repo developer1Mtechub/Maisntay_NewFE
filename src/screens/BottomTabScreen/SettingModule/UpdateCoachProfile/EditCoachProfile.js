@@ -41,19 +41,17 @@ import { requestCameraPermission } from "../../../../utilities/cameraPermission"
 import useBackHandler from "../../../../components/useBackHandler";
 import useCustomTranslation from "../../../../utilities/useCustomTranslation";
 import getCurrentLanguage from "../../../../utilities/currentLanguage";
+import { useAlert } from "../../../../providers/AlertContext";
 
 const EditCoachProfile = ({ navigation }) => {
     const { t } = useCustomTranslation();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const [photoSheetVisible, setPhotoSheetVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState('');
     const { user_id } = useSelector(state => state.userLogin);
     const { status } = useSelector(state => state.coacheeProfile);
     const profileStatus = useSelector(state => state.getUserProfile.status);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const [areas, setAreas] = useState([]);
     const [languages, setLanguages] = useState([]);
 
@@ -174,8 +172,6 @@ const EditCoachProfile = ({ navigation }) => {
         });
     }
 
-    //console.log('selectedImage',selectedImage)
-
     const handleSubmitProfile = () => {
 
         const newPayload = {
@@ -201,15 +197,12 @@ const EditCoachProfile = ({ navigation }) => {
         formData.append('role', newPayload?.role);
         formData.append('about', newPayload?.about);
 
-        //console.log('formData', JSON.stringify(formData));
-
         dispatch(postCoacheeProfile(formData)).then((result) => {
-            //console.log('post result', result?.payload)
             if (result?.payload?.success === true) {
                 renderSuccessMessage(t('profileEditedSuccess'), result)
             }
             else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', t('errorMessage'))
             }
         })
 
@@ -233,11 +226,7 @@ const EditCoachProfile = ({ navigation }) => {
 
 
     const renderSuccessMessage = (message, result) => {
-
-        setMessage(t('successMessage'))
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
+        showAlert("Success", 'success', message)
         updateUserData(result)
         setTimeout(() => {
             resetNavigation(navigation, "Dashboard", { screen: 'Setting' });
@@ -245,13 +234,6 @@ const EditCoachProfile = ({ navigation }) => {
 
     }
 
-    const renderErrorMessage = (message) => {
-
-        setMessage(t('errorMessage'))
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
 
 
     const renderPhotoBottomSheet = () => {
@@ -340,11 +322,6 @@ const EditCoachProfile = ({ navigation }) => {
         );
     };
 
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     if (profileStatus === 'loading') {
         return <FullScreenLoader visible={profileStatus} />
@@ -376,7 +353,6 @@ const EditCoachProfile = ({ navigation }) => {
                 }}
                 customTextStyle={{ marginStart: 70 }}
             />
-            {renderToastMessage()}
 
             <ScrollView showsVerticalScrollIndicator={false}>
 

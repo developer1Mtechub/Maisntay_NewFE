@@ -45,10 +45,12 @@ import DatePicker from "react-native-date-picker";
 import useCustomTranslation from "../../../utilities/useCustomTranslation";
 import CountryCodePicker from "../../../components/CountryCodePicker";
 import CoacheeProfile from "../../CoacheeProfileModule/CoacheeProfile";
+import { useAlert } from "../../../providers/AlertContext";
 
 const EditProfile = ({ navigation }) => {
     const { t } = useCustomTranslation()
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const [countrySheetVisible, setCountrySheetVisible] = useState(false);
     const [photoSheetVisible, setPhotoSheetVisible] = useState(false);
     const [selectedImage, setSelectedImage] = useState('');
@@ -271,11 +273,11 @@ const EditProfile = ({ navigation }) => {
         dispatch(postCoacheeProfile(formData)).then((result) => {
             //console.log(result?.payload)
             if (result?.payload?.success === true) {
-                renderSuccessMessage(t('profileEditMsg'), result)
-
+                renderSuccessMessage(result)
             }
             else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', result?.payload?.message)
+                //renderErrorMessage(result?.payload?.message)
             }
         })
 
@@ -297,12 +299,9 @@ const EditProfile = ({ navigation }) => {
     }
 
 
-    const renderSuccessMessage = (message, result) => {
+    const renderSuccessMessage = (result) => {
 
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
+        showAlert("Success", 'success', t('profileEditMsg'))
         updateUserData(result)
         setTimeout(() => {
             resetNavigation(navigation, "Dashboard", { screen: 'Setting' });
@@ -310,13 +309,6 @@ const EditProfile = ({ navigation }) => {
 
     }
 
-    const renderErrorMessage = (message) => {
-
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
 
     const getCountryNameById = (countryId) => {
         const country = countries?.country?.find(country => country.id === countryId);
@@ -523,11 +515,6 @@ const EditProfile = ({ navigation }) => {
         );
     };
 
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     if (profileStatus === 'loading') {
         return <FullScreenLoader visible={profileStatus} />
@@ -582,8 +569,6 @@ const EditProfile = ({ navigation }) => {
                 }}
                 customTextStyle={{ marginStart: 70 }}
             />
-            {renderToastMessage()}
-
             <ScrollView showsVerticalScrollIndicator={false}>
 
                 <View style={{ alignItems: "center", }}>

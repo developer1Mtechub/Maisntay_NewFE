@@ -33,10 +33,12 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow access to the camera for capturing photo</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to provide a better experience</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to provide a better experience</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Allow access to the photo library for selecting images</string>
+	<string>We need your location to provide a better experience</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Montserrat-Bold.ttf</string>

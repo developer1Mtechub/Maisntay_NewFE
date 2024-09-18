@@ -14,9 +14,14 @@ import { getData } from './src/utilities/localStorage';
 import CustomSnackbar from './src/components/CustomToast';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './src/i18n';
+import { AlertProvider, useAlert } from './src/providers/AlertContext';
+import DynamicAlert from './src/components/DynamicAlert';
+
+//changes for PR
 
 const MainApp = () => {
   const dispatch = useDispatch();
+  const { showAlert } = useAlert()
   const { role, token } = useSelector((state) => state.userLogin);
   const { user_id } = useSelector((state) => state.userLogin);
 
@@ -91,13 +96,6 @@ const MainApp = () => {
         if (role === "coach") {
           renderSuccessMessage(`You have a new session request from ${notificationRequest?.result?.first_name} ${notificationRequest?.result?.last_name}`,
             "New Session Request")
-          // setModalContent({
-          //   title: 'New Session Request',
-          //   subtitle: `You have a new session request from  ${notificationRequest?.result?.first_name} ${notificationRequest?.result?.last_name}`,
-          //   buttonText: 'Ok',
-          //   // icon: require('./src/assets/images/session_request.png'), // Adjust the path as needed
-          // });
-          // setModalVisible(true);
         }
 
         const deleteResponse = await fetch(
@@ -303,29 +301,15 @@ const MainApp = () => {
   );
 
   const renderSuccessMessage = (message, title) => {
-    setMessage(title);
-    setDescription(message);
-    setIsVisible(true);
-    setToastType('success');
+    showAlert(title, 'success', message)
   };
 
-  const renderToastMessage = () => (
-    <CustomSnackbar
-      visible={isVisible}
-      message={message}
-      messageDescription={description}
-      onDismiss={() => { setIsVisible(false); }}
-      toastType={toastType}
-      isPupNoti={true}
-    />
-  );
 
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="white" barStyle="dark-content" />
       {renderNetworkStatus()}
       <MainStack />
-      {renderToastMessage()}
       <CustomModal
         isVisible={modalVisible}
         onClose={toggleModal}
@@ -340,9 +324,12 @@ const MainApp = () => {
 
 const App = () => (
   <Provider store={store}>
-    <I18nextProvider i18n={i18n}>
-      <MainApp />
-    </I18nextProvider>
+    <AlertProvider>
+      <I18nextProvider i18n={i18n}>
+        <MainApp />
+        <DynamicAlert />
+      </I18nextProvider>
+    </AlertProvider>
   </Provider>
 );
 

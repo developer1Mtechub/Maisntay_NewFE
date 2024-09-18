@@ -21,11 +21,13 @@ import CustomSnackbar from '../../components/CustomToast';
 import moment from 'moment';
 import useBackHandler from '../../components/useBackHandler';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
+import { useAlert } from '../../providers/AlertContext';
 
 
 const AvailabilityScreen = ({ navigation }) => {
     const { t } = useCustomTranslation();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { status, error } = useSelector((state) => state.availability);
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -43,12 +45,6 @@ const AvailabilityScreen = ({ navigation }) => {
     const [departureSheetVisible, setDepatSheetVisible] = useState(false);
     const [date, setDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
-
-
 
     const toggleDatePicker = (day, index = null) => {
         setDepatSheetVisible(true);
@@ -187,38 +183,19 @@ const AvailabilityScreen = ({ navigation }) => {
         }
         dispatch(postAvailabilities(availabilityPayload)).then((result) => {
             if (result?.payload?.success == true) {
-                renderSuccessMessage('Availability Added Successfully')
+                showAlert("Success", "success", 'Availability Added Successfully')
                 setTimeout(() => {
-                    //resetNavigation(navigation, 'SessionDuration')
                     navigation.navigate('SessionDuration')
                 }, 3000);
 
             }
             else {
-                renderErrorMessage(result?.payload?.error)
+                showAlert("Error", "error", result?.payload?.error)
+
             }
         })
     }
 
-    const renderSuccessMessage = async (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     const handleBackPress = () => {
         resetNavigation(navigation, 'CoachingAreas')
@@ -253,8 +230,6 @@ const AvailabilityScreen = ({ navigation }) => {
                 textAlign: 'center',
                 marginTop: 10,
             }}>{t('avialabilitySubTitle')}</Text>
-
-            {renderToastMessage()}
 
             <ScrollView style={{ marginTop: 5 }}>
                 {daysOfWeek.map((day, index) => (
