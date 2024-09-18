@@ -17,6 +17,8 @@ import i18n from './src/i18n';
 import { AlertProvider, useAlert } from './src/providers/AlertContext';
 import DynamicAlert from './src/components/DynamicAlert';
 
+//changes for PR
+
 const MainApp = () => {
   const dispatch = useDispatch();
   const { showAlert } = useAlert()
