@@ -21,11 +21,11 @@ const Onboarding = ({ navigation }) => {
     },
     {
       title: t('onboardingText2'),
-      image: require('../../assets/images/onboarding-2.jpg'), // Replace with your image path
+      image: require('../../assets/images/onboarding_2.jpeg'), // Replace with your image path
     },
     {
       title: t('onboardingText3'),
-      image: require('../../assets/images/onboarding-3.jpg'), // Replace with your image path
+      image: require('../../assets/images/onboarding_3.png'), // Replace with your image path
     },
   ];
 
@@ -53,7 +53,10 @@ const Onboarding = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar translucent backgroundColor="transparent" />
-      <View style={{ flex: 1, marginBottom: -20 }}>
+      <View style={{
+        flex: 1,
+        // marginBottom: -20
+      }}>
         <Swiper
           ref={swiperRef}
           loop={false}
@@ -64,7 +67,7 @@ const Onboarding = ({ navigation }) => {
           activeDot={<View style={styles.activeDot} />}>
           {onboardingData.map((item, index) => (
             <View key={index} style={styles.slide}>
-              <Image  source={item.image} style={styles.image} />
+              <Image source={item.image} style={styles.image} />
               <Text style={styles.title}>{item.title}</Text>
             </View>
           ))}
@@ -136,7 +139,10 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     textAlign: 'center',
     marginHorizontal: 60,
-    color: 'black'
+    color: 'black',
+    width: '80%',
+    marginBottom: 45
+
   },
   button: {
     padding: 10,
