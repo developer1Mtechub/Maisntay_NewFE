@@ -12,16 +12,14 @@ import { setAnyData } from '../../redux/setAnyTypeDataSlice';
 import useBackHandler from '../../components/useBackHandler';
 import CustomSnackbar from '../../components/CustomToast';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
+import { useAlert } from '../../providers/AlertContext';
 
 const GenderSelectionScreen = ({ navigation, route }) => {
     const { t } = useCustomTranslation();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { routeData } = route.params;
     const [selectedGender, setSelectedGender] = useState(null);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
 
     const handleGenderSelection = (gender) => {
         setSelectedGender(gender);
@@ -29,7 +27,7 @@ const GenderSelectionScreen = ({ navigation, route }) => {
 
     const handleNavigation = () => {
         if (selectedGender == null) {
-            renderErrorMessage("Please select gender.")
+            showAlert("Error", "error", "Please select gender.")
             return
         }
         const newPayload = {
@@ -49,20 +47,6 @@ const GenderSelectionScreen = ({ navigation, route }) => {
     useBackHandler(handleBackPress)
 
 
-    const renderErrorMessage = (message) => {
-
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -91,7 +75,7 @@ const GenderSelectionScreen = ({ navigation, route }) => {
                 marginTop: 10,
                 width: '80%'
             }}>{t('genderSubTitle')}</Text>
-            {renderToastMessage()}
+
 
             <HorizontalDivider height={1} customStyle={{ width: '90%', alignSelf: 'center', marginTop: 50 }} />
 

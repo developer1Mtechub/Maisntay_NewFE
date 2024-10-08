@@ -15,16 +15,13 @@ import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import CustomLayout from '../../../../components/CustomLayout';
 import useBackHandler from '../../../../components/useBackHandler';
 import { t } from 'i18next';
+import { useAlert } from '../../../../providers/AlertContext';
 
 const UpdateSessionDurations = ({ navigation }) => {
-
+    const { showAlert } = useAlert()
     const dispatch = useDispatch();
     const { status, error } = useSelector((state) => state.updateSessionDurations)
     const { user_id } = useSelector((state) => state.anyData);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const [inputValues, setInputValues] = useState({
         thirtyMinutes: "",
         sixtyMinutes: "",
@@ -91,39 +88,15 @@ const UpdateSessionDurations = ({ navigation }) => {
         }
         dispatch(updateSessionDuration(newSessionPayload)).then((result) => {
             if (result?.payload?.success === true) {
-                renderSuccessMessage('Changes saved successfully')
+                showAlert("Success", "success", 'Changes saved successfully')
                 setTimeout(() => {
                     resetNavigation(navigation, 'CoachSettingProfile')
                 }, 3000);
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", "error", result?.payload?.message)
             }
         });
 
-        //navigation.navigate('CoachProfileCompletion')
-        //dispatch data here to call api...
-    }
-
-    const renderSuccessMessage = (message) => {
-
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-    }
-
-    const renderErrorMessage = (message) => {
-
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
     }
 
     const handleBackPress = () => {
@@ -162,7 +135,6 @@ const UpdateSessionDurations = ({ navigation }) => {
                         marginBottom: 10
                     }}>{t('setSessionTitle')}</Text>
 
-                    {renderToastMessage()}
 
                     {/* First View */}
                     <LinearGradient

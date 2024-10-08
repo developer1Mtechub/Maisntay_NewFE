@@ -16,19 +16,17 @@ import { makePayment } from '../../redux/paymentMethod/makePaymentSlice';
 import CrossIcon from '../../assets/svgs/cross_icon.svg'
 import CustomSnackbar from '../../components/CustomToast';
 import { resetNavigation } from '../../utilities/resetNavigation';
+import { useAlert } from '../../providers/AlertContext';
 
 const PaymentModal = ({ onClose, paymentPayload, navigation }) => {
     const { createPaymentMethod } = useStripe();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const createCustomerStatus = useSelector((state) => state.createCustomer.status)
     const makePaymentStatus = useSelector((state) => state.makePayment.status)
     const [cardDetails, setCradDetails] = useState(null);
     const [selectedCard, setSelectedCard] = useState(null);
     const [paymentMethodId, setPaymentMethodId] = useState(null);
-    const [toastVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const buttonText = selectedCard ? "Pay Now" : "Add Card";
     const labelText = selectedCard ? "Pay with selected card" : "Add New Card";
     const stripeKey = "pk_test_51OmriNHtA3SK3biQ6qq8s1IrRmnZ08NsSlklyXD9GN8gLPGsR4tGqH08FkxkBDvPrEMIPLEIQMkAc8NrASOByh6E00ayjZlEWe"
@@ -37,7 +35,6 @@ const PaymentModal = ({ onClose, paymentPayload, navigation }) => {
     const fetchCardInfo = (card) => {
         setSelectedCard(card);
         setPaymentMethodId(card?.card_id)
-        console.log('Selected Card Info:', card);
     };
 
     const handleCardSelect = (card) => {
@@ -85,19 +82,17 @@ const PaymentModal = ({ onClose, paymentPayload, navigation }) => {
     };
 
     const callCreateCustomerAPI = (paymentMethodId) => {
-        console.log(' paymentMethod id :', paymentMethodId);
         dispatch(createCustomer({
             user_id: paymentPayload?.coachee_id,
             paymentMethodId: paymentMethodId
         })).then((result) => {
-            console.log('customer creation', result?.payload)
             if (result?.payload?.success === true) {
                 renderSuccessMessage(result?.payload?.message, false)
                 setTimeout(() => {
                     sendPayment(paymentMethodId);
                 }, 3000);
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', result?.payload?.message)
             }
 
 
@@ -110,13 +105,11 @@ const PaymentModal = ({ onClose, paymentPayload, navigation }) => {
             ...paymentPayload,
             paymentMethodId: paymentMethodId
         }
-        console.log('sendPayemntPayload', sendPayemntPayload)
         dispatch(makePayment(sendPayemntPayload)).then((result) => {
-            console.log('send payment', result?.payload)
             if (result?.payload?.success == true) {
                 renderSuccessMessage(result?.payload?.message, true)
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', result?.payload?.message)
             }
         })
 
@@ -128,10 +121,7 @@ const PaymentModal = ({ onClose, paymentPayload, navigation }) => {
     };
 
     const renderSuccessMessage = (message, displayType) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
+        showAlert("Success", 'success', message)
         if (displayType) {
             setTimeout(() => {
                 handleCloseModal();
@@ -142,21 +132,8 @@ const PaymentModal = ({ onClose, paymentPayload, navigation }) => {
 
     }
 
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
 
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={toastVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
-    console.log('makePaymentStatus', makePaymentStatus)
-    console.log('createCustomerStatus', createCustomerStatus)
     return (
         <StripeProvider publishableKey={stripeKey}>
             <View>
@@ -166,7 +143,6 @@ const PaymentModal = ({ onClose, paymentPayload, navigation }) => {
                     selectedCard={selectedCard}
                     onCardDeselect={handleCardDeselect}
                 />
-                {renderToastMessage()}
                 <Text style={{
                     fontFamily: fonts.fontsType.semiBold,
                     fontSize: 18,

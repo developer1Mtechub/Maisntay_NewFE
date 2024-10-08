@@ -20,25 +20,20 @@ import { resetNavigation } from '../../../utilities/resetNavigation';
 import useBackHandler from '../../../components/useBackHandler';
 import useCustomTranslation from '../../../utilities/useCustomTranslation';
 import getCurrentLanguage from '../../../utilities/currentLanguage';
+import { useAlert } from '../../../providers/AlertContext';
 
 const UpdateInterest = ({ navigation, route }) => {
     const { t } = useCustomTranslation();
     const currentLanguage = getCurrentLanguage();
     const { role, interestAreas } = route.params
-    // console.log(role)
-    // console.log(interestAreas)
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const coachingAreasList = useSelector((state) => state.coachingAreas.coachingAreasList);
     const status = useSelector((state) => state.coachingAreas.status);
     const profileStatus = useSelector((state) => state.coacheeProfile.status);
     const error = useSelector((state) => state.coachingAreas.error);
     const [searchText, setSearchText] = useState('');
     const [selectedAreas, setSelectedAreas] = useState([]);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
-    const [selected, setSelected] = useState(false);
 
 
     const handleBackPress = () => {
@@ -58,26 +53,6 @@ const UpdateInterest = ({ navigation, route }) => {
             setSelectedAreas((prevSelected) => [...prevSelected, areaId]);
         }
     };
-
-
-    // const getCoachAreaIdByName = (name) => {
-    //     const coachArea = coachingAreasList?.result?.find(area => {
-    //         return currentLanguage === "de" ? area?.german_name === name : area?.name === name;
-    //     });
-    //     return coachArea ? coachArea.id : null;
-    // };
-    
-    // useEffect(() => {
-    //     if (interestAreas && coachingAreasList && coachingAreasList.result) {
-    //         const coachAreaIds = interestAreas?.map(item => {
-    //             const nameToCheck = currentLanguage === "de" ? item.german_name : item.name;
-    //             return getCoachAreaIdByName(nameToCheck);
-    //         });
-    //         console.log("Coach Area IDs:", coachAreaIds);
-    //         setSelectedAreas(coachAreaIds);
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [interestAreas, coachingAreasList]);
 
 
     const getAreaIdByName = (name) => {
@@ -106,52 +81,26 @@ const UpdateInterest = ({ navigation, route }) => {
 
     const handleSubmitProfile = () => {
 
-        //console.log(selectedAreas)
-
         const objectConverted = "{" + selectedAreas.join(",") + "}";
-        // console.log(JSON.stringify(objectConverted));
-
         const formData = new FormData();
         formData.append('interests', objectConverted);
         formData.append('role', role);
 
         dispatch(postCoacheeProfile(formData)).then((result) => {
-            //console.log('result coach', result?.payload);
             if (result?.payload?.success == true) {
-                renderSuccessMessage(result?.payload?.message)
+                showAlert("Success", 'success', result?.payload?.message)
                 setTimeout(() => {
                     resetNavigation(navigation, "Dashboard", { screen: 'Setting' })
                 }, 3000);
 
 
             } else {
-                renderErrorMessage(result?.payload?.message ? result?.payload?.message
-                    : 'Network Error')
+                showAlert("Error", 'error', result?.payload?.message || 'Network Error')
+
             }
         })
     }
 
-
-    const renderSuccessMessage = async (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     const renderAreaItem = ({ item }) => {
         const isSelected = selectedAreas.includes(item.id);
@@ -202,16 +151,6 @@ const UpdateInterest = ({ navigation, route }) => {
                 onToggle={() => { handleCheckboxClick(item?.id) }}
                 customStyle={{ borderColor: 'rgba(187, 187, 187, 1)', borderWidth: 0.5 }}
             />
-            {/* <CustomCheckbox
-                checkedColor={isSelected ? colors.white : "rgba(15, 109, 106, 1)"}
-                uncheckedColor="rgba(238, 238, 238, 1)"
-                onToggle={() => {
-                    setSelected(!selected);
-                    handleCheckboxClick(item.id);
-                }}
-                isSelected={isSelected}
-                customStyle={{ borderColor: 'rgba(187, 187, 187, 1)', borderWidth: 0.5 }}
-            /> */}
         </TouchableOpacity>
 
     }
@@ -228,8 +167,6 @@ const UpdateInterest = ({ navigation, route }) => {
                     // marginTop: hp('5%'),
                     marginStart: 20
                 }} />
-
-            {renderToastMessage()}
 
             <View style={{ padding: 20, marginTop: hp('2%'), flex: 2 }}>
 

@@ -19,11 +19,13 @@ import { storeData } from '../../utilities/localStorage';
 import useBackHandler from '../../components/useBackHandler';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
 import getCurrentLanguage from '../../utilities/currentLanguage';
+import { useAlert } from '../../providers/AlertContext';
 
 const CoacheeCoachingAreas = ({ navigation, route }) => {
     const { t } = useCustomTranslation();
     const currentLanguage = getCurrentLanguage();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const profilePayload = useSelector((state) => state.anyData.anyData);
     const coachingAreasList = useSelector((state) => state.coachingAreas.coachingAreasList);
     const cocaheeStatus = useSelector((state) => state.coacheeProfile.status);
@@ -47,12 +49,10 @@ const CoacheeCoachingAreas = ({ navigation, route }) => {
     const handleCheckboxClick = (areaId) => {
         const isSelected = selectedAreas.includes(areaId);
         if (isSelected) {
-            console.log('areaId', areaId)
             setSelectedAreas((prevSelected) =>
                 prevSelected.filter((id) => id !== areaId)
             );
         } else {
-            console.log('areaId2', areaId)
             setSelectedAreas((prevSelected) => [...prevSelected, areaId]);
         }
     };
@@ -96,8 +96,7 @@ const CoacheeCoachingAreas = ({ navigation, route }) => {
                 renderSuccessMessage(result?.payload?.message, result)
 
             } else {
-                renderErrorMessage(result?.payload?.message ? result?.payload?.message
-                    : 'Network Error')
+                showAlert("Error", "error", result?.payload?.message || 'Network Error')
             }
         })
 
@@ -110,10 +109,7 @@ const CoacheeCoachingAreas = ({ navigation, route }) => {
 
     const renderSuccessMessage = async (message, result) => {
 
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
+        showAlert("Success", "success", message)
         delayAndStoreData(result)
         setTimeout(async () => {
 
@@ -122,26 +118,11 @@ const CoacheeCoachingAreas = ({ navigation, route }) => {
 
     }
 
-    const renderErrorMessage = (message) => {
-
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
 
     if (status === 'loading') {
         return <FullScreenLoader visible={status} />
     }
 
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
-
-   // console.log(selectedAreas)
 
     const renderAreas = ({ item }) => {
         return <TouchableOpacity
@@ -198,7 +179,6 @@ const CoacheeCoachingAreas = ({ navigation, route }) => {
                 marginTop: 20,
                 width: wp('70%')
             }}>{t('coachingHeaderTitle')}</Text>
-            {renderToastMessage()}
 
             <View style={{ padding: 20, marginTop: hp('2%'), flex: 2 }}>
 

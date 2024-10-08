@@ -19,11 +19,13 @@ import { resetNavigation } from '../../utilities/resetNavigation';
 import useBackHandler from '../../components/useBackHandler';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
 import getCurrentLanguage from '../../utilities/currentLanguage';
+import { useAlert } from '../../providers/AlertContext';
 
 const CoachingAreas = ({ navigation }) => {
     const { t } = useCustomTranslation();
     const currentLanguage = getCurrentLanguage();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const coachingAreasList = useSelector((state) => state.coachingAreas.coachingAreasList);
     const status = useSelector((state) => state.coachingAreas.status);
     const profileStatus = useSelector((state) => state.coacheeProfile.status);
@@ -31,10 +33,6 @@ const CoachingAreas = ({ navigation }) => {
     const profilePayload = useSelector((state) => state.anyData.anyData);
     const [searchText, setSearchText] = useState('');
     const [selectedAreas, setSelectedAreas] = useState([]);
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
 
     const handleBackPress = () => {
         resetNavigation(navigation, 'SelectLanguage')
@@ -54,14 +52,8 @@ const CoachingAreas = ({ navigation }) => {
         }
     };
 
-    const handleCheckboxToggle = () => {
-        //console.log('Checkbox is now:', isChecked ? 'checked' : 'unchecked');
-        // Perform any other actions based on the checkbox state
-    };
-
 
     useEffect(() => {
-        // Fetch Areas when the component mounts
         dispatch(fetchAreas()).then((result) => {
             //console.log('result', result)
         });
@@ -100,48 +92,19 @@ const CoachingAreas = ({ navigation }) => {
         formData.append('is_completed', true);
 
         dispatch(postCoacheeProfile(formData)).then((result) => {
-            //console.log('result coach', result?.payload);
             if (result?.payload?.success == true) {
-                renderSuccessMessage(result?.payload?.message, result)
+                showAlert("Success", "success", result?.payload?.message)
                 setTimeout(() => {
                     navigation.navigate('Availability')
                 }, 3000);
 
 
             } else {
-                renderErrorMessage(result?.payload?.message ? result?.payload?.message
-                    : 'Network Error')
+                showAlert("Error", "error", result?.payload?.message || 'Network Error')
             }
         })
     }
 
-
-    async function delayAndStoreData(result) {
-
-        await storeData('userData', result?.payload);
-    }
-
-
-    const renderSuccessMessage = async (message, result) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-        //delayAndStoreData(result)
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
 
     const renderLanguageItem = ({ item }) => (
         <TouchableOpacity
@@ -163,18 +126,7 @@ const CoachingAreas = ({ navigation }) => {
                 flex: 1, fontFamily: fonts.fontsType.medium,
                 fontSize: 14, color: 'rgba(118, 118, 118, 1)', marginStart: 10
             }}>{currentLanguage === "de" ? item.german_name : item.name}</Text>
-            {/* <CheckBox
-                value={selectedAreas.includes(item.id)}
-                onValueChange={() => handleCheckboxClick(item.id)}
-                boxType={'square'}
-                onCheckColor='white'
-                tintColor='rgba(204, 204, 204, 1)'
-                onTintColor='rgba(15, 109, 106, 1)'
-                onFillColor='rgba(15, 109, 106, 1)'
-                tintColors={{ true: 'rgba(15, 109, 106, 1)', false: 'rgba(204, 204, 204, 1)' }}
-                style={{ marginEnd: 5, }}
-            /> */}
-
+        
             <CustomCheckbox
                 isUpdate={true}
                 isSelected={selectedAreas.includes(item.id)}
@@ -209,7 +161,6 @@ const CoachingAreas = ({ navigation }) => {
                 marginTop: 20,
                 width: wp('70%')
             }}>{t('durationHeaderTitle')}</Text>
-            {renderToastMessage()}
             <View style={{ padding: 20, marginTop: hp('2%'), flex: 2 }}>
 
                 <FlatList

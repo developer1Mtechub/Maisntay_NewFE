@@ -12,10 +12,12 @@ import { removeData } from '../../../../utilities/localStorage';
 import { resetState } from '../../../../redux/authSlices/userLoginSlice';
 import CustomSnackbar from '../../../../components/CustomToast';
 import useCustomTranslation from '../../../../utilities/useCustomTranslation';
+import { useAlert } from '../../../../providers/AlertContext';
 
 const DeleteAccount = ({ navigation }) => {
     const { t } = useCustomTranslation();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { status } = useSelector((state) => state.deleteCoachAccount)
     const [isVisible, setIsVisible] = useState(false);
     const [message, setMessage] = useState('');
@@ -53,40 +55,21 @@ const DeleteAccount = ({ navigation }) => {
 
     const handleDelete = () => {
         dispatch(deleteCoachAccount()).then((result) => {
-            //console.log(result?.payload)
             if (result?.payload?.status === true) {
                 renderSuccessMessage(result?.payload?.message);
             } else {
-                renderErrorMessage(result?.payload?.message);
+                showAlert("Error", 'error', result?.payload?.message)
             }
         });
     }
 
 
     const renderSuccessMessage = (message) => {
-
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
+        showAlert("Success", 'success', message)
         setTimeout(() => {
             clearCoachData();
         }, 3000);
 
-    }
-
-    const renderErrorMessage = (message) => {
-
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
     }
 
     return (
@@ -99,7 +82,6 @@ const DeleteAccount = ({ navigation }) => {
                     params={{ screen: "Setting" }}
                     headerTitle={t('deleteAccount')}
                 />
-                {renderToastMessage()}
                 <ScrollView showsVerticalScrollIndicator={false} style={{ marginBottom: 30 }}>
                     <View style={styles.imageContainer}>
                         <Image

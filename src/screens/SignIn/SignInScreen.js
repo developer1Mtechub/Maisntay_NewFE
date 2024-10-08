@@ -41,6 +41,7 @@ import i18n from '../../i18n';
 import { getLocationWithPermission } from '../../utilities/getUserLocation';
 import LanguageSelector from '../../components/LanguageSelector';
 import CountryCodePicker from '../../components/CountryCodePicker';
+import { useAlert } from '../../providers/AlertContext';
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -48,20 +49,16 @@ const validationSchema = Yup.object().shape({
 });
 
 const SignInScreen = ({ navigation }) => {
+  const { showAlert } = useAlert()
   const { t, changeLanguage } = useCustomTranslation();
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.userLogin)
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [message, setMessage] = useState('');
-  const [description, setDescription] = useState('');
-  const [toastType, setToastType] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [languageDropdownVisible, setLanguageDropdownVisible] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('English');
-  const [currentLocation, setCurrentLocation] = useState({});
 
 
   useEffect(() => {
@@ -120,23 +117,15 @@ const SignInScreen = ({ navigation }) => {
   }
 
   const renderSuccessMessage = async (message, result) => {
-    setMessage('Success')
-    setDescription(message)
-    setIsVisible(true);
-    setToastType('success')
+    showAlert("Success", 'success', message)
     delayAndStoreData(result);
   }
 
-  const renderErrorMessage = (message) => {
-    setMessage('Error')
-    setDescription(message)
-    setIsVisible(true);
-    setToastType('error')
-  }
 
   const handleSignInUserCall = async (email, password) => {
-
     const location = await getLocationWithPermission();
+    console.log(location)
+    
     if (location) {
 
       const user = { email: email, password: password, lat: location?.latitude, long: location?.longitude };
@@ -152,28 +141,17 @@ const SignInScreen = ({ navigation }) => {
         if (result?.payload?.success == true) {
           renderSuccessMessage('User Signed In Successfully', result)
         } else {
-          renderErrorMessage(result?.payload?.message || 'Network Error')
+          showAlert("Error", 'error', result?.payload?.message || 'Network Error')
         }
 
       });
 
     } else {
-      renderErrorMessage('Enable your location to continue.')
+      showAlert("Error", 'error', "Enable your location to continue.")
     }
 
   };
 
-  const renderToastMessage = () => {
-    return <CustomSnackbar
-      visible={isVisible}
-      message={message}
-      messageDescription={description}
-      onDismiss={() => { setIsVisible(false) }}
-      toastType={toastType}
-      isPupNoti={description === 'Your account has not yet been verified by a administrator.' ? true : false}
-
-    />
-  }
 
   return (
     <KeyboardAvoidingView
@@ -224,9 +202,7 @@ const SignInScreen = ({ navigation }) => {
               </View>
             )}
 
-            {renderToastMessage()}
-
-            <View style={{ marginTop: (languageDropdownVisible || isVisible) ? 50 : 0 }}>
+            <View style={{ marginTop: (languageDropdownVisible) ? 50 : 0 }}>
               <Formik
                 enableReinitialize={true}
                 initialValues={{ email: email, password: password }}

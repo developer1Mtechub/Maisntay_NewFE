@@ -24,8 +24,8 @@ import CustomLayout from "../../components/CustomLayout";
 import useBackHandler from "../../components/useBackHandler";
 import useCustomTranslation from "../../utilities/useCustomTranslation";
 import LanguageSelector from "../../components/LanguageSelector";
+import { useAlert } from "../../providers/AlertContext";
 
-// Validation schema using Yup
 const validationSchema = Yup.object().shape({
   password: Yup.string().required("Password is required"),
   confirmPassword: Yup.string()
@@ -35,20 +35,17 @@ const validationSchema = Yup.object().shape({
 
 const ResetPassword = ({ navigation, route }) => {
   const { t } = useCustomTranslation();
+  const { showAlert } = useAlert()
   const { email } = route.params;
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const [message, setMessage] = useState('');
-  const [description, setDescription] = useState('');
-  const [toastType, setToastType] = useState('');
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.resetPassword);
 
   const handleResetPassword = (email, password, confirmPassword) => {
 
     if (password !== confirmPassword) {
-      renderErrorMessage("Passwords do not match.");
+      showAlert("Error", "error", "Passwords do not match.")
       return
     }
 
@@ -57,42 +54,19 @@ const ResetPassword = ({ navigation, route }) => {
       password: password
     };
 
-    // console.log('payload', payload)
-
     dispatch(resetPassword(payload)).then((result) => {
-      //console.log(result?.payload)
       if (result?.payload?.success == true) {
-        renderSuccessMessage(result?.payload?.message)
+        showAlert("Success", "success", result?.payload?.message)
+        setTimeout(() => {
+          resetNavigation(navigation, 'SignIn')
+        }, 3000);
+
       } else {
-        renderErrorMessage(result?.payload?.message)
+        showAlert("Error", "error", result?.payload?.message)
       }
     });;
   };
 
-  const renderSuccessMessage = (message) => {
-    setMessage('Success')
-    setDescription(message)
-    setIsVisible(true);
-    setToastType('success')
-    setTimeout(() => {
-      resetNavigation(navigation, 'SignIn')
-    }, 3000);
-
-  }
-
-  const renderErrorMessage = (message) => {
-    setMessage('Error')
-    setDescription(message)
-    setIsVisible(true);
-    setToastType('error')
-  }
-
-
-  const renderToastMessage = () => {
-    return <CustomSnackbar visible={isVisible} message={message}
-      messageDescription={description}
-      onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-  }
 
   const handleBackPress = () => {
 
@@ -117,7 +91,6 @@ const ResetPassword = ({ navigation, route }) => {
             style={styles.imageStyle}
           />
         </View>
-        {renderToastMessage()}
         <Formik
           initialValues={{ password: "", confirmPassword: "" }}
           validationSchema={validationSchema}
@@ -125,7 +98,8 @@ const ResetPassword = ({ navigation, route }) => {
             if (values.password === values.confirmPassword) {
               handleResetPassword(email, values.password, values.confirmPassword);
             } else {
-              renderErrorMessage("Passwords do not match.");
+
+              showAlert("Error", "error", "Passwords do not match.")
             }
             setSubmitting(false);
           }}

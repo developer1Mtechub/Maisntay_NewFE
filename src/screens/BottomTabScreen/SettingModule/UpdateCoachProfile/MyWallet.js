@@ -20,20 +20,18 @@ import CustomSnackbar from '../../../../components/CustomToast';
 import { resetNavigation } from '../../../../utilities/resetNavigation';
 import useBackHandler from '../../../../components/useBackHandler';
 import useCustomTranslation from '../../../../utilities/useCustomTranslation';
+import { useAlert } from '../../../../providers/AlertContext';
 
 const MyWallet = ({ navigation }) => {
     const { t } = useCustomTranslation();
     const dispatch = useDispatch();
+    const { showAlert } = useAlert()
     const { transactions, status } = useSelector((state) => state.transactions)
     const withdrawStatus = useSelector((state) => state.withDrawAmount.status)
     const { user_id } = useSelector((state) => state.anyData);
     const { anyData } = useSelector((state) => state.anyData)
     const [withdrawSheet, setWithdrawSheet] = useState(false);
     const [amount, setAmount] = useState('')
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
     const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
@@ -46,7 +44,7 @@ const MyWallet = ({ navigation }) => {
 
     const handleWithdrawAmount = () => {
         if (amount == '') {
-            renderErrorMessage('Enter amount to withdraw.')
+            showAlert("Error", 'error', "Enter amount to withdraw.")
             return
         }
         const withdrawAmountPayload = {
@@ -54,43 +52,23 @@ const MyWallet = ({ navigation }) => {
             amount: amount
         }
         dispatch(withDrawAmount(withdrawAmountPayload)).then((result) => {
-            console.log(result)
             if (result?.payload?.success === true) {
                 renderSuccessMessage(result?.payload?.message)
             } else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", 'error', result?.payload?.message)
             }
         })
     }
 
     const renderSuccessMessage = (message) => {
 
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-
+        showAlert("Success", 'success', message)
         setTimeout(() => {
             toggleSheet();
             setAmount('');
         }, 3000);
 
     }
-
-    const renderErrorMessage = (message) => {
-
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-    }
-
 
     const renderWithdrawSheet = () => {
         return (
@@ -201,7 +179,7 @@ const MyWallet = ({ navigation }) => {
                 }}
                 route={anyData?.route}
             />
-            {renderToastMessage()}
+
             <View style={{ margin: 20, flex: 1 }}>
 
                 <Text style={{

@@ -25,6 +25,7 @@ import fonts from "../../theme/fonts";
 import { widthPercentageToDP } from "react-native-responsive-screen";
 import useBackHandler from "../../components/useBackHandler";
 import useCustomTranslation from "../../utilities/useCustomTranslation";
+import { useAlert } from "../../providers/AlertContext";
 
 const CELL_COUNT = 4;
 
@@ -32,12 +33,9 @@ const CoacheeVerificationScreen = ({ navigation, route }) => {
   const { t } = useCustomTranslation();
   const { email, code, routeData } = route.params;
   const dispatch = useDispatch();
+  const { showAlert } = useAlert()
   const { status, error } = useSelector((state) => state.sendVerificationCode);
   const [value, setValue] = useState('');
-  const [isVisible, setIsVisible] = useState(false);
-  const [message, setMessage] = useState('');
-  const [description, setDescription] = useState('');
-  const [toastType, setToastType] = useState('');
 
   const ref = useBlurOnFulfill({ value, cellCount: CELL_COUNT });
   const [props, getCellOnLayoutHandler] = useClearByFocusCell({
@@ -50,52 +48,20 @@ const CoacheeVerificationScreen = ({ navigation, route }) => {
       email: email,
       code: value
     }
-    console.log("sendPayload", sendPayload);
     dispatch(sendVerificationCode(sendPayload)).then((result) => {
-      //console.log(result?.payload)
       if (result?.payload?.success == true) {
-        renderSuccessMessage(result?.payload?.message)
+        showAlert("Error", "error", result?.payload?.message)
+        setTimeout(() => {
+          resetNavigation(navigation, 'GenderSelection', { routeData: routeData })
+        }, 3000);
+
       } else {
-        renderErrorMessage(result?.payload?.message)
+        showAlert("Error", "error", result?.payload?.message)
       }
     });
   };
 
-  const renderSuccessMessage = (message) => {
-    setMessage('Success')
-    setDescription(message)
-    setIsVisible(true);
-    setToastType('success')
-    setTimeout(() => {
-      resetNavigation(navigation, 'GenderSelection', { routeData: routeData })
-    }, 3000);
 
-  }
-
-  const renderErrorMessage = (message) => {
-    setMessage('Error')
-    setDescription(message)
-    setIsVisible(true);
-    setToastType('error')
-  }
-
-
-  const handleTimeExpired = () => {
-    // Handle what should happen when the timer expires
-    console.log('Timer expired');
-  };
-
-  const handleResendCode = () => {
-    // Handle the logic to resend the verification code
-    console.log('Resending code...');
-  };
-
-
-  const renderToastMessage = () => {
-    return <CustomSnackbar visible={isVisible} message={message}
-      messageDescription={description}
-      onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
-  }
 
   const handleBackPress = () => {
     resetNavigation(navigation, 'SignUp')
@@ -117,7 +83,7 @@ const CoacheeVerificationScreen = ({ navigation, route }) => {
           style={styles.imageStyle}
         />
       </View>
-      {renderToastMessage()}
+    
       <View>
         {/* <Text style={styles.welcomeTextStyle}>Verification</Text> */}
         <Text

@@ -213,7 +213,7 @@ const NotificationComponent = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        <EmptyDataView showImage={false} message="No new notifications" />
+        <EmptyDataView showImage={false} message={t('noNewNotification')} />
       )}
     </SafeAreaView>
   );

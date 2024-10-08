@@ -14,16 +14,14 @@ import { resetNavigation } from '../../utilities/resetNavigation';
 import useBackHandler from '../../components/useBackHandler';
 import { setAnyData, setUserId } from '../../redux/setAnyTypeDataSlice';
 import useCustomTranslation from '../../utilities/useCustomTranslation';
+import { useAlert } from '../../providers/AlertContext';
 
 const ReviewBooking = ({ navigation, route }) => {
     const { t } = useCustomTranslation();
+    const { showAlert } = useAlert()
     const { sessionPayload } = route.params
     const dispatch = useDispatch();
     const { status } = useSelector((state) => state.postSessionDetail)
-    const [isVisible, setIsVisible] = useState(false);
-    const [message, setMessage] = useState('');
-    const [description, setDescription] = useState('');
-    const [toastType, setToastType] = useState('');
 
 
     const handlePostSessionDetail = () => {
@@ -38,38 +36,15 @@ const ReviewBooking = ({ navigation, route }) => {
         }
         dispatch(postSessionsDetails(newSessionTobeSend)).then((result) => {
             if (result?.payload?.success === true) {
-                renderSuccessMessage("Request submitted successfully")
+                showAlert("Success", "success", "Request submitted successfully")
+                setTimeout(() => {
+                    resetNavigation(navigation, 'CoachingList')
+                }, 3000);
             }
             else {
-                renderErrorMessage(result?.payload?.message)
+                showAlert("Error", "error", result?.payload?.message)
             }
         })
-    }
-
-
-    const renderSuccessMessage = (message) => {
-        setMessage('Success')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('success')
-
-        setTimeout(() => {
-            resetNavigation(navigation, 'CoachingList')
-        }, 3000);
-
-    }
-
-    const renderErrorMessage = (message) => {
-        setMessage('Error')
-        setDescription(message)
-        setIsVisible(true);
-        setToastType('error')
-    }
-
-    const renderToastMessage = () => {
-        return <CustomSnackbar visible={isVisible} message={message}
-            messageDescription={description}
-            onDismiss={() => { setIsVisible(false) }} toastType={toastType} />
     }
 
     const handleBackPress = () => {
@@ -98,8 +73,6 @@ const ReviewBooking = ({ navigation, route }) => {
                     navigation={navigation}
                     navigateTo={'CoachDetail'}
                 />
-
-                {renderToastMessage()}
 
                 <ProfileCard
                     profile_pic={sessionPayload?.profile_pic}
